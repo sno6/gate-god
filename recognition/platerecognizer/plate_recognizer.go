@@ -15,16 +15,17 @@ import (
 
 const (
 	baseURL = "https://api.platerecognizer.com/v1/plate-reader"
-	token   = "<TOKEN>"
 )
 
-type Recognizer struct{}
-
-func New() *Recognizer {
-	return &Recognizer{}
+type Recognizer struct {
+	token string
 }
 
-func (rr *Recognizer) Recognize(r io.Reader) (*recognition.Result, error) {
+func New(token string) *Recognizer {
+	return &Recognizer{token: token}
+}
+
+func (rr *Recognizer) RecognizePlate(r io.Reader) (*recognition.Result, error) {
 	body, boundary, err := rr.buildPostBody(r)
 	if err != nil {
 		return nil, err
@@ -36,7 +37,7 @@ func (rr *Recognizer) Recognize(r io.Reader) (*recognition.Result, error) {
 	}
 
 	req.Header.Add("Content-Type", boundary)
-	req.Header.Add("Authorization", fmt.Sprintf("Token %s", token))
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", rr.token))
 
 	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {

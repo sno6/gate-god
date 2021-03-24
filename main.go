@@ -18,8 +18,13 @@ func main() {
 	}
 	defer f.Close()
 
-	r := platerecognizer.New()
-	result, err := r.Recognize(f)
+	token := os.Getenv("PLATE_RECOGNIZER_API_TOKEN")
+	if token == "" {
+		panic("empty token")
+	}
+
+	r := platerecognizer.New(token)
+	result, err := r.RecognizePlate(f)
 	if err != nil {
 		log.Fatal(err)
 	}
