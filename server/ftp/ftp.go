@@ -6,30 +6,40 @@ import (
 	"log"
 	"os"
 
-	"github.com/sno6/gate-god/camera"
-
 	"github.com/pkg/errors"
 	_ "github.com/shurcooL/vfsgen"
+	"github.com/sno6/gate-god/camera"
 	"goftp.io/server/v2"
 )
 
+const port = 2121
+
+// Server is an FTP server implementation.
+//
+// But why FTP? I hear you ask..
+//
+// Because I have an old Hikvision camera and if I want to get
+// motion detection events sent to me then it needs to be over FTP..
+// however an HTTP implementation should be similar and easy to do.
 type Server struct {
+	cfg     *Config
 	logger  *log.Logger
-	handler camera.MotionDetector
+	batcher *camera.FrameBatcher
+}
+
+type Config struct {
+	User, Password string
 }
 
 type Driver struct {
-	handler camera.MotionDetector
+	batcher *camera.FrameBatcher
 }
 
-func New(handler camera.MotionDetector) *Server {
-	if handler == nil {
-		panic("handler should not be nil")
-	}
-
+func New(cfg *Config, batcher *camera.FrameBatcher) *Server {
 	return &Server{
+		cfg:     cfg,
+		batcher: batcher,
 		logger:  log.New(os.Stdout, "[FTP]: ", log.LstdFlags),
-		handler: handler,
 	}
 }
 
@@ -61,28 +71,22 @@ func (d *Driver) GetFile(ctx *server.Context, s string, i int64) (int64, io.Read
 	return 0, ioutil.NopCloser(nil), nil
 }
 
+// PutFile.. the only method we care about - essentially just forwards the frame to the batcher.
 func (d *Driver) PutFile(ctx *server.Context, s string, r io.Reader, i int64) (int64, error) {
-	err := d.handler.OnMotionDetection(r)
-	if err != nil {
-		return -1, err
-	}
-
+	d.batcher.SendFrame(&camera.Frame{R: r, Name: s})
 	return 1, nil
 }
 
 func (s *Server) Serve() error {
-	s.logger.Println("Starting server on port 2121")
+	s.logger.Printf("Starting server on port: %d\n", port)
 
-	opt := &server.Options{
-		Name:   "gate-god",
-		Driver: &Driver{handler: s.handler},
-		Port:   2121,
-		Auth:   &server.SimpleAuth{Name: "admin", Password: "password"},
+	ftp, err := server.NewServer(&server.Options{
+		Port:   port,
+		Auth:   &server.SimpleAuth{Name: s.cfg.User, Password: s.cfg.Password},
 		Perm:   server.NewSimplePerm("root", "root"),
-		Logger: &server.StdLogger{},
-	}
-
-	ftp, err := server.NewServer(opt)
+		Driver: &Driver{batcher: s.batcher},
+		Logger: &server.DiscardLogger{},
+	})
 	if err != nil {
 		return errors.Wrap(err, "ftp: error while serving")
 	}

@@ -25,7 +25,7 @@ func New(token string) *Recognizer {
 	return &Recognizer{token: token}
 }
 
-func (rr *Recognizer) RecognizePlate(r io.Reader) (*recognition.Result, error) {
+func (rr *Recognizer) RecognizePlate(r io.Reader) (*recognition.PlateResult, error) {
 	body, boundary, err := rr.buildPostBody(r)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (rr *Recognizer) RecognizePlate(r io.Reader) (*recognition.Result, error) {
 		return nil, errors.New("recogizer: no results")
 	}
 
-	return &recognition.Result{
+	return &recognition.PlateResult{
 		Plate: result.Results[0].Plate,
 		Score: result.Results[0].Score,
 	}, nil

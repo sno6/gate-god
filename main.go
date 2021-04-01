@@ -1,33 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
-	"github.com/sno6/gate-god/recognition/platerecognizer"
+	"github.com/sno6/gate-god/camera"
+	"github.com/sno6/gate-god/server/ftp"
 )
 
 func main() {
-	// server := ftp.New(nil)
-	// server.Serve()
+	batcher := camera.NewFrameBatcher()
+	server := ftp.New(&ftp.Config{
+		User:     "admin",
+		Password: "password",
+	}, batcher)
 
-	f, err := os.Open("./image.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	token := os.Getenv("PLATE_RECOGNIZER_API_TOKEN")
-	if token == "" {
-		panic("empty token")
-	}
-
-	r := platerecognizer.New(token)
-	result, err := r.RecognizePlate(f)
-	if err != nil {
+	if err := server.Serve(); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(result)
 }
