@@ -10,6 +10,8 @@ import (
 	"github.com/sno6/gate-god/relay"
 )
 
+const plateRecogThresh = 0.85
+
 type Engine struct {
 	recognizer    recognition.PlaterRecognizer
 	relay         *relay.Relay
@@ -28,10 +30,11 @@ func New(
 	allowedPlated []string,
 ) *Engine {
 	e := &Engine{
-		recognizer: recognizer,
-		relay:      relay,
-		frameChan:  make(chan *camera.Frame),
-		logger:     log.New(os.Stdout, "[Engine]: ", log.LstdFlags),
+		recognizer:    recognizer,
+		relay:         relay,
+		frameChan:     make(chan *camera.Frame),
+		logger:        log.New(os.Stdout, "[Engine]: ", log.LstdFlags),
+		allowedPlates: allowedPlated,
 	}
 	go e.process()
 	return e
@@ -69,13 +72,17 @@ func (e *Engine) process() {
 
 			e.logger.Printf("Received plate: %v with score: %v\n", plate.Plate, plate.Score)
 
+			// We got an accurate read on this plate, no need to keep processing.
+			if plate.Score >= plateRecogThresh {
+				e.ignoreCurrentBatch = true
+			}
+
 			if !e.isPlateAllowed(plate.Plate) {
 				e.logger.Printf("Access attempt rejected.")
 				break
-			} else {
-				// We don't need to process anymore images in this batch.
-				e.ignoreCurrentBatch = true
 			}
+
+			e.logger.Printf("Opening the gate. Welcome %v\n", plate.Plate)
 
 			// The gate is now open, enjoy your stay.
 			e.relay.Toggle()
