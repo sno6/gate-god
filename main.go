@@ -3,19 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/sno6/gate-god/camera"
-	"github.com/sno6/gate-god/server/ftp"
+	cmd "github.com/sno6/gate-god/cmd/gate-god"
 )
 
 func main() {
-	batcher := camera.NewFrameBatcher()
-	server := ftp.New(&ftp.Config{
-		User:     "admin",
-		Password: "password",
-	}, batcher)
-
-	if err := server.Serve(); err != nil {
+	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
-
 }

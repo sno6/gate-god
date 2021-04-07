@@ -14,7 +14,3 @@ type VehicleResult struct {
 type PlaterRecognizer interface {
 	RecognizePlate(r io.Reader) (*PlateResult, error)
 }
-
-type VehicleRecognizer interface {
-	RecognizeVehicle(r io.Reader) (*VehicleResult, error)
-}

@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	_ "github.com/shurcooL/vfsgen"
 	"github.com/sno6/gate-god/camera"
+	"github.com/sno6/gate-god/camera/batch"
 	"goftp.io/server/v2"
 )
 
@@ -20,11 +21,11 @@ const port = 2121
 //
 // Because I have an old Hikvision camera and if I want to get
 // motion detection events sent to me then it needs to be over FTP..
-// however an HTTP implementation should be similar and easy to do.
+// however, an HTTP implementation should be similar and easy to do.
 type Server struct {
 	cfg     *Config
 	logger  *log.Logger
-	batcher *camera.FrameBatcher
+	batcher *batch.FrameBatcher
 }
 
 type Config struct {
@@ -32,10 +33,10 @@ type Config struct {
 }
 
 type Driver struct {
-	batcher *camera.FrameBatcher
+	batcher *batch.FrameBatcher
 }
 
-func New(cfg *Config, batcher *camera.FrameBatcher) *Server {
+func New(cfg *Config, batcher *batch.FrameBatcher) *Server {
 	return &Server{
 		cfg:     cfg,
 		batcher: batcher,

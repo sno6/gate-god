@@ -1,0 +1,4 @@
+{
+    "allowed_plates": ["HFS629"],
+    "relay_pin_mcu": 17
+}
