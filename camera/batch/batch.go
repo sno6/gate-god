@@ -2,12 +2,9 @@ package batch
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"os"
-	"path"
-	"strconv"
 	"time"
 
 	"github.com/sno6/gate-god/camera"
@@ -58,9 +55,6 @@ func (fb *FrameBatcher) process() {
 			if len(fb.buffer) == 0 {
 				break
 			}
-
-			fmt.Printf("Saving %d frames in batch\n", len(fb.buffer))
-			go saveBuffer(fb.buffer[:])
 
 			// Reset the buffer for the next batch.
 			fb.currentBatchID++
@@ -117,25 +111,4 @@ func readerToReader(r io.Reader) (io.Reader, error) {
 	b := &bytes.Buffer{}
 	_, err := io.Copy(b, r)
 	return b, err
-}
-
-// Testing purposes.. probably wanna chuck this in S3 later..
-func saveBuffer(frames []*camera.Frame) {
-	dirName := path.Join(frameSaveDir, strconv.Itoa(int(time.Now().UnixNano())))
-	if err := os.Mkdir(dirName, 0777); err != nil {
-		panic(err)
-	}
-
-	for _, frame := range frames {
-		f, err := os.Create(path.Join(dirName, frame.Name))
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		_, err = io.Copy(f, frame.Reader)
-		if err != nil {
-			panic(err)
-		}
-	}
 }
