@@ -26,17 +26,12 @@ func NewDummy(mcuPin int) (*Relay, error) {
 }
 
 func (r *Relay) setup() error {
+	defer r.pin.Output()
 	return rpio.Open()
 }
 
 func (r *Relay) Toggle() {
-	r.pin.Toggle()
-}
-
-func (r *Relay) TestRelay() {
-	for i := 0; i < 5; i++ {
-		r.Toggle()
-
-		time.Sleep(time.Second * 10)
-	}
+	r.pin.High()
+	time.Sleep(time.Second)
+	r.pin.Low()
 }

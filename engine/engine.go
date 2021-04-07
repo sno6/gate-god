@@ -1,7 +1,9 @@
 package engine
 
 import (
-	"fmt"
+	"log"
+	"os"
+	"strings"
 
 	"github.com/sno6/gate-god/camera"
 	"github.com/sno6/gate-god/recognition"
@@ -16,6 +18,8 @@ type Engine struct {
 	frameChan          chan *camera.Frame
 	currentBatchID     int
 	ignoreCurrentBatch bool
+
+	logger *log.Logger
 }
 
 func New(
@@ -27,6 +31,7 @@ func New(
 		recognizer: recognizer,
 		relay:      relay,
 		frameChan:  make(chan *camera.Frame),
+		logger:     log.New(os.Stdout, "[Engine]: ", log.LstdFlags),
 	}
 	go e.process()
 	return e
@@ -53,12 +58,37 @@ func (e *Engine) process() {
 				break
 			}
 
-			fmt.Printf("Engine received prime frame: %s\n", f.Name)
+			e.logger.Printf("Engine received prime frame: %s\n", f.Name)
 
-			// TODO:
-			// 1. Run through recognition.
-			// 2. Check allowed list for plate.
-			// 3. Open the gate.
+			// Run the plate through recognition.
+			plate, err := e.recognizer.RecognizePlate(f.Reader)
+			if err != nil {
+				e.logger.Println(err)
+				break
+			}
+
+			e.logger.Printf("Received plate: %v with score: %v\n", plate.Plate, plate.Score)
+
+			if !e.isPlateAllowed(plate.Plate) {
+				e.logger.Printf("Access attempt rejected.")
+				break
+			} else {
+				// We don't need to process anymore images in this batch.
+				e.ignoreCurrentBatch = true
+			}
+
+			// The gate is now open, enjoy your stay.
+			e.relay.Toggle()
 		}
 	}
+}
+
+func (e *Engine) isPlateAllowed(plate string) bool {
+	for _, p := range e.allowedPlates {
+		if strings.ToLower(p) == strings.ToLower(plate) {
+			return true
+		}
+	}
+
+	return false
 }
