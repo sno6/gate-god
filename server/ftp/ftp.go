@@ -74,7 +74,7 @@ func (d *Driver) GetFile(ctx *server.Context, s string, i int64) (int64, io.Read
 
 // PutFile.. the only method we care about - essentially just forwards the frame to the batcher.
 func (d *Driver) PutFile(ctx *server.Context, s string, r io.Reader, i int64) (int64, error) {
-	d.batcher.SendFrame(&camera.Frame{R: r, Name: s})
+	d.batcher.SendFrame(&camera.Frame{Reader: r, Name: s})
 	return 1, nil
 }
 
