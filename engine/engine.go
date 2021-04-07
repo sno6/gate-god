@@ -27,14 +27,14 @@ type Engine struct {
 func New(
 	recognizer recognition.PlaterRecognizer,
 	relay *relay.Relay,
-	allowedPlated []string,
+	allowedPlates []string,
 ) *Engine {
 	e := &Engine{
 		recognizer:    recognizer,
 		relay:         relay,
 		frameChan:     make(chan *camera.Frame),
 		logger:        log.New(os.Stdout, "[Engine]: ", log.LstdFlags),
-		allowedPlates: allowedPlated,
+		allowedPlates: allowedPlates,
 	}
 	go e.process()
 	return e
