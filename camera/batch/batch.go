@@ -14,6 +14,7 @@ import (
 	"github.com/sno6/gate-god/engine"
 )
 
+const frameSaveDir = "./motion"
 const tickerTimeout = time.Second * 3
 
 // FrameBatcher is a service that runs concurrently
@@ -120,7 +121,7 @@ func readerToReader(r io.Reader) (io.Reader, error) {
 
 // Testing purposes.. probably wanna chuck this in S3 later..
 func saveBuffer(frames []*camera.Frame) {
-	dirName := path.Join("./motion", strconv.Itoa(int(time.Now().UnixNano())))
+	dirName := path.Join(frameSaveDir, strconv.Itoa(int(time.Now().UnixNano())))
 	if err := os.Mkdir(dirName, 0777); err != nil {
 		panic(err)
 	}
