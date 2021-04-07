@@ -21,6 +21,10 @@ func New(mcuPin int) (*Relay, error) {
 	return r, nil
 }
 
+func NewDummy(mcuPin int) (*Relay, error) {
+	return &Relay{pin: rpio.Pin(mcuPin)}, nil
+}
+
 func (r *Relay) setup() error {
 	return rpio.Open()
 }

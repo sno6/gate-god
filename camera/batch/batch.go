@@ -28,8 +28,9 @@ type FrameBatcher struct {
 	frameChan chan *camera.Frame
 	logger    *log.Logger
 
-	bufferT *time.Ticker
-	buffer  []*camera.Frame
+	currentBatchID int
+	bufferT        *time.Ticker
+	buffer         []*camera.Frame
 }
 
 func New(engine *engine.Engine) *FrameBatcher {
@@ -62,18 +63,23 @@ func (fb *FrameBatcher) process() {
 
 			// Reset the buffer for the next batch.
 			fb.buffer = nil
+			fb.currentBatchID++
 		case f := <-fb.frameChan:
 			fb.logger.Printf("Received frame: %s\n", f.Name)
 
 			// Unfortunately, because of some crazy issue within the FTP server library
 			// we are using we need to drain the reader before the handler can accept
 			// a new PUT file request. More info: https://gitea.com/goftp/server/issues/148
-			r, err := readerToReader(f.R)
+			r, err := readerToReader(f.Reader)
 			if err != nil {
-				log.Printf("readerToReader: %v\n", err)
+				log.Printf("error copying reader: %v\n", err)
 			}
 
-			frame := &camera.Frame{R: r, Name: f.Name}
+			frame := &camera.Frame{
+				Name:    f.Name,
+				BatchID: fb.currentBatchID,
+				Reader:  r,
+			}
 
 			// If we are in "key frame" territory, meaning we are around 3-4 frames
 			// in, start sending them to the engine to process license plates and
@@ -113,7 +119,7 @@ func saveBuffer(frames []*camera.Frame) {
 		}
 		defer f.Close()
 
-		_, err = io.Copy(f, frame.R)
+		_, err = io.Copy(f, frame.Reader)
 		if err != nil {
 			panic(err)
 		}

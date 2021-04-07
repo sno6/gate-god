@@ -3,6 +3,7 @@ package camera
 import "io"
 
 type Frame struct {
-	R    io.Reader
-	Name string
+	Reader  io.Reader
+	Name    string
+	BatchID int
 }

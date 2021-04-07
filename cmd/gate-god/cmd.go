@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/sno6/gate-god/camera/batch"
 	"github.com/sno6/gate-god/config"
 	"github.com/sno6/gate-god/engine"
@@ -21,8 +22,13 @@ func Run() error {
 		Use:   "gate-god",
 		Short: "Run the god of gate controllers.",
 		Run: func(cmd *cobra.Command, args []string) {
+			err := godotenv.Load()
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			var cfg config.AppConfig
-			err := gonfig.NewFromFile(&gonfig.Config{
+			err = gonfig.NewFromFile(&gonfig.Config{
 				Path:        cfgPath,
 				Environment: gonfig.Local,
 			}, &cfg)
@@ -30,7 +36,7 @@ func Run() error {
 				log.Fatal(err)
 			}
 
-			relay, err := relay.New(cfg.RelayPinMCU)
+			relay, err := relay.NewDummy(cfg.RelayPinMCU)
 			if err != nil {
 				log.Fatal(err)
 			}
