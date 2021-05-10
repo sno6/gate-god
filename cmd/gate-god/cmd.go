@@ -3,6 +3,8 @@ package cmd
 import (
 	"log"
 
+	"github.com/sno6/gate-god/api"
+
 	"github.com/joho/godotenv"
 	"github.com/sno6/gate-god/camera/batch"
 	"github.com/sno6/gate-god/config"
@@ -36,22 +38,40 @@ func Run() error {
 				log.Fatal(err)
 			}
 
-			relay, err := relay.New(cfg.RelayPinMCU)
+			rly, err := relay.NewDummy(cfg.RelayPinMCU)
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			recognizer := platerecognizer.New(cfg.Token)
-			engine := engine.New(recognizer, relay, cfg.AllowedPlates)
-			batcher := batch.New(engine)
+			eng := engine.New(recognizer, rly, cfg.AllowedPlates)
+			batcher := batch.New(eng)
 
-			s := ftp.New(&ftp.Config{
-				User:     cfg.User,
-				Password: cfg.Password,
-			}, batcher)
-			if err = s.Serve(); err != nil {
-				log.Fatal(err)
-			}
+			errChan := make(chan error)
+
+			go func() {
+				ftpServer := ftp.New(&ftp.Config{
+					User:     cfg.User,
+					Password: cfg.Password,
+				}, batcher)
+
+				err := ftpServer.Serve()
+				if err != nil {
+					errChan <- err
+				}
+			}()
+
+			go func() {
+				apiServer := api.New(rly)
+
+				err := apiServer.Serve(cfg.HTTPPort)
+				if err != nil {
+					errChan <- err
+				}
+			}()
+
+			// If any of the servers error, fail.
+			log.Fatal(<-errChan)
 		},
 	}
 

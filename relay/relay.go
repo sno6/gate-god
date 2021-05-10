@@ -32,6 +32,12 @@ func (r *Relay) setup() error {
 
 func (r *Relay) Toggle() {
 	r.pin.High()
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
 	r.pin.Low()
+}
+
+func (r *Relay) TestRelay() {
+	r.Toggle()
+	time.Sleep(time.Second * 10)
+	r.Toggle()
 }

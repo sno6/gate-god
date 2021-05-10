@@ -1,16 +1,21 @@
 package engine
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/sno6/gate-god/camera"
 	"github.com/sno6/gate-god/recognition"
 	"github.com/sno6/gate-god/relay"
 )
 
-const plateRecogThresh = 0.85
+const (
+	plateRecogThresh = 0.85
+	gateRefresh      = time.Minute
+)
 
 type Engine struct {
 	recognizer    recognition.PlaterRecognizer
@@ -20,6 +25,7 @@ type Engine struct {
 	frameChan          chan *camera.Frame
 	currentBatchID     int
 	ignoreCurrentBatch bool
+	lastOpened         time.Time
 
 	logger *log.Logger
 }
@@ -56,6 +62,12 @@ func (e *Engine) process() {
 				e.ignoreCurrentBatch = false
 			}
 
+			// The gate has recently been opened.. don't process these frames.
+			if time.Since(e.lastOpened) < gateRefresh {
+				fmt.Println("Receiving frames but still in timeout")
+				break
+			}
+
 			// Already found what we wanted, ignore new frames.
 			if e.ignoreCurrentBatch {
 				break
@@ -86,6 +98,7 @@ func (e *Engine) process() {
 
 			// The gate is now open, enjoy your stay.
 			e.relay.Toggle()
+			e.lastOpened = time.Now()
 		}
 	}
 }

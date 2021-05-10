@@ -74,7 +74,10 @@ func (rr *Recognizer) buildPostBody(r io.Reader) (*bytes.Buffer, string, error) 
 	if err != nil {
 		return nil, "", err
 	}
-	part.Write(contents)
+	_, err = part.Write(contents)
+	if err != nil {
+		return nil, "", err
+	}
 
 	if err := writer.WriteField("regions", "nz"); err != nil {
 		return nil, "", err
