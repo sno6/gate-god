@@ -38,7 +38,7 @@ func Run() error {
 				log.Fatal(err)
 			}
 
-			rly, err := relay.NewDummy(cfg.RelayPinMCU)
+			rly, err := relay.New(cfg.RelayPinMCU)
 			if err != nil {
 				log.Fatal(err)
 			}
