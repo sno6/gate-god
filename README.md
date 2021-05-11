@@ -7,4 +7,4 @@
 
 > A project I built for my dad that automatically opens his house's front gate when I arrive.
 
-### More to come..
+Details on my blog: https://www.farley.ai/posts/gates
