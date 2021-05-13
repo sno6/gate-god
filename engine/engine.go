@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	plateRecogThresh = 0.85
-	gateRefresh      = time.Minute
+	plateRecogThresh = 0.80
+	gateRefresh      = time.Second * 20
 )
 
 type Engine struct {
 	recognizer    recognition.PlaterRecognizer
-	relay         *relay.Relay
+	relay         relay.Relayer
 	allowedPlates []string
 
 	frameChan          chan *camera.Frame
@@ -32,7 +32,7 @@ type Engine struct {
 
 func New(
 	recognizer recognition.PlaterRecognizer,
-	relay *relay.Relay,
+	relay relay.Relayer,
 	allowedPlates []string,
 ) *Engine {
 	e := &Engine{
@@ -70,10 +70,11 @@ func (e *Engine) process() {
 
 			// Already found what we wanted, ignore new frames.
 			if e.ignoreCurrentBatch {
+				fmt.Println("Gate opened. Ignoring further frames")
 				break
 			}
 
-			e.logger.Printf("Engine received prime frame: %s\n", f.Name)
+			e.logger.Printf("Engine received prime frame, sending to PR: %s\n", f.Name)
 
 			// Run the plate through recognition.
 			plate, err := e.recognizer.RecognizePlate(f.Reader)

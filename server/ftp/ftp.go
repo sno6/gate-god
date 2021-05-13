@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/sno6/gate-god/camera"
+
 	"github.com/pkg/errors"
 	_ "github.com/shurcooL/vfsgen"
-	"github.com/sno6/gate-god/camera"
 	"github.com/sno6/gate-god/camera/batch"
 	"goftp.io/server/v2"
 )

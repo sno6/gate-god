@@ -12,10 +12,10 @@ import (
 type API struct {
 	mux    *http.ServeMux
 	logger *log.Logger
-	r      *relay.Relay
+	r      relay.Relayer
 }
 
-func New(r *relay.Relay) *API {
+func New(r relay.Relayer) *API {
 	api := &API{
 		mux:    http.NewServeMux(),
 		r:      r,

@@ -71,30 +71,20 @@ func (fb *FrameBatcher) process() {
 				break
 			}
 
-			// If we are in "key frame" territory, meaning we are around 3-4 frames
+			// If we are in "key frame" territory, meaning we are around 1-4 frames
 			// in, start sending them to the engine to process license plates and
 			// core logic. This is done to skip "car approaching" frames.
 			if fb.isKeyFrame(len(fb.buffer)) {
-				// We need to send another copy of the copied frame so that
-				// when the HTTP request consumes the reader it leaves the original
-				// reader for consumption by the batch archiver.
-				cp, err := readerToReader(r)
-				if err != nil {
-					log.Printf("error copying key reader: %v\n", err)
-					break
-				}
-
 				fb.engine.SendFrame(&camera.Frame{
 					Name:    f.Name,
 					BatchID: fb.currentBatchID,
-					Reader:  cp,
+					Reader:  r,
 				})
 			}
 
 			fb.buffer = append(fb.buffer, &camera.Frame{
 				Name:    f.Name,
 				BatchID: fb.currentBatchID,
-				Reader:  r,
 			})
 
 			fb.bufferT.Reset(tickerTimeout)
@@ -102,9 +92,9 @@ func (fb *FrameBatcher) process() {
 	}
 }
 
-// We determine a key frame as being the 3rd -> 6th frame in the shot.
+// We determine a key frame as being the 1st -> 4th frame in the shot.
 func (fb *FrameBatcher) isKeyFrame(bufLen int) bool {
-	return bufLen >= 3 && bufLen <= 8
+	return bufLen >= 1 && bufLen <= 4
 }
 
 func readerToReader(r io.Reader) (io.Reader, error) {

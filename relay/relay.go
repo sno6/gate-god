@@ -6,9 +6,15 @@ import (
 	"github.com/stianeikeland/go-rpio"
 )
 
+type Relayer interface {
+	Toggle()
+}
+
 type Relay struct {
 	pin rpio.Pin
 }
+
+type DummyRelay struct{}
 
 func New(mcuPin int) (*Relay, error) {
 	r := &Relay{
@@ -21,9 +27,11 @@ func New(mcuPin int) (*Relay, error) {
 	return r, nil
 }
 
-func NewDummy(mcuPin int) (*Relay, error) {
-	return &Relay{pin: rpio.Pin(mcuPin)}, nil
+func NewDummy(_ int) (*DummyRelay, error) {
+	return &DummyRelay{}, nil
 }
+
+func (d *DummyRelay) Toggle() {}
 
 func (r *Relay) setup() error {
 	defer r.pin.Output()
