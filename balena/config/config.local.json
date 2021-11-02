@@ -1,0 +1,5 @@
+{
+    "http_port": 8080,
+    "allowed_plates": [],
+    "relay_pin_mcu": 17
+}
