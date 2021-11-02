@@ -24,5 +24,4 @@ GOOS=linux GOARCH=arm GOARM=5 go build && mv ./gate-god ./balena/gate-god
 cd ./balena && balena push gate
 ```
 
-
-
+Lastly, head over to balena/config/config.local.json and update the `allowed_plates` to all vehicle plates you wish to allow entry.
