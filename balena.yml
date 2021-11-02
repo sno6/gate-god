@@ -1,1 +1,25 @@
+name: gate-god
+type: sw.application
+description: >-
+  Open gates automatically with license plate recognition, a Raspberry Pi, and a relay!
 joinable: false
+post-provisioning: >-
+  More information on setup can be found at https://github.com/sno6/gate-god
+assets:
+  repository:
+    type: blob.asset
+    data:
+      url: 'https://github.com/sno6/gate-god'
+  logo:
+    type: blob.asset
+    data:
+      url: >-
+        https://github.com/sno6/gate-god/blob/master/asset/logo.png
+data:
+  defaultDeviceType: raspberry-pi
+  supportedDeviceTypes:
+    - raspberry-pi
+    - raspberry-pi2
+    - raspberrypi3
+    - raspberrypi4-64
+version: 3.6.10
