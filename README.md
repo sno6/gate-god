@@ -25,3 +25,7 @@ cd ./balena && balena push gate
 ```
 
 Lastly, head over to balena/config/config.local.json and update the `allowed_plates` to all vehicle plates you wish to allow entry.
+
+## Deploy with Balena
+
+[![balena deploy button](https://www.balena.io/deploy.svg)](https://dashboard.balena-cloud.com/deploy?repoUrl=https://github.com/sno6/gate-god)
