@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	plateRecogThresh = 0.80
+	plateRecogThresh = 0.50
 	gateRefresh      = time.Second * 20
 )
 
